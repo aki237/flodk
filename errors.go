@@ -1,69 +1,34 @@
 package flodk
 
-import "fmt"
-
-type InterruptID struct {
-	NodeID string `json:"node_id"`
-	ID     string `json:"id"`
-}
-
-func (i InterruptID) String() string {
-	return i.NodeID + ":" + i.ID
-}
-
-type RequirementTypes string
-
-const (
-	Enum                  RequirementTypes = "enum"
-	Custom                RequirementTypes = "custom"
-	CustomWithSuggestions RequirementTypes = "custom_with_suggestions"
+import (
+	"fmt"
+	"strings"
 )
 
-type Requirement struct {
-	Type        RequirementTypes `json:"type"`
-	Suggestions []string         `json:"suggestions"`
+type ErrRequirmentKeyNotFound string
+
+func (k ErrRequirmentKeyNotFound) Error() string {
+	return "requirement key '" + string(k) + "' not found"
 }
 
-type Requirements map[string]Requirement
+func RequirementKeyNotFound(key string) ErrRequirmentKeyNotFound {
+	return ErrRequirmentKeyNotFound(key)
+}
 
-func (r Requirements) Validate(values map[string]string) error {
-	for k := range r {
-		data, ok := values[k]
-		if !ok {
-			return fmt.Errorf("key %s not found in interrupt response", k)
-		}
+type ErrRequirementInvalidValue struct {
+	Key         string
+	Value       string
+	Suggestions string
+}
 
-		if data == "" {
-			return fmt.Errorf("%s cannot be empty", k)
-		}
+func RequirementInvalid(key string, value string, suggestions []string) ErrRequirementInvalidValue {
+	return ErrRequirementInvalidValue{
+		Key:         key,
+		Value:       value,
+		Suggestions: strings.Join(suggestions, ", "),
 	}
-
-	return nil
 }
 
-// HITLInterrupt is used to return a invoke a human in the loop
-// routine as a part of the flow.
-type HITLInterrupt struct {
-	Reason          string       `json:"reason"`
-	Message         string       `json:"message"`
-	ValidationError error        `json:"validation_error"`
-	Requirements    Requirements `json:"requirements"`
-	InterruptID     InterruptID  `json:"interrupt_id"`
-}
-
-// Error implements the error interface for the task interrupt.
-func (it HITLInterrupt) Error() string {
-	return fmt.Sprintf("flow interrupted: %s", it.Reason)
-}
-
-// ConditionalInterrupt is used to direct the execution of a flow
-// using a alias value. This value will then be used to choose the
-// next edge of the graph.
-type ConitionalInterrupt struct {
-	Value string
-}
-
-// Error implements the error interface for the conditional interrupt.
-func (ci ConitionalInterrupt) Error() string {
-	return fmt.Sprintf("conditional interrupt: directing to %s", ci.Value)
+func (iv ErrRequirementInvalidValue) Error() string {
+	return fmt.Sprintf("invalid value for %s: %s, need one of [%s]", iv.Key, iv.Value, iv.Suggestions)
 }

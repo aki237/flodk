@@ -7,6 +7,7 @@ import (
 	"os"
 )
 
+// Graph stores the graph nodes and edge configuration.
 type Graph[T any] struct {
 	nodeMap map[string]Node[T]
 	edges   map[string]EdgeResolver[T]
@@ -14,10 +15,13 @@ type Graph[T any] struct {
 	start string
 }
 
+// GraphBuilder is a helper type which contains methods to build a graph.
 type GraphBuilder[T any] struct {
 	g Graph[T]
 }
 
+// NewGraphBuilder returns a new GraphBuilder. Chain this return with other methods to [GraphBuilder.Build]
+// a graph.
 func NewGraphBuilder[T any]() *GraphBuilder[T] {
 	return &GraphBuilder[T]{
 		g: Graph[T]{

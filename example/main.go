@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"flodk"
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/aki-kong/flodk"
 )
 
 type FlightBookingState struct {
@@ -25,7 +26,8 @@ func (g Greet) Execute(ctx context.Context, state FlightBookingState) (FlightBoo
 			Type: flodk.Custom,
 		},
 	}
-	values, err := flodk.InterruptWithValidation(ctx,
+	values, err := flodk.InterruptWithValidation(
+		ctx,
 		"Before we continue, may I know your name?",
 		"name_not_found",
 		requirements,
